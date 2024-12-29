@@ -33,12 +33,35 @@ body {
     margin-bottom: 20px;
 }
 
+/* General Widget Container
+.widget {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Ensures header aligns perfectly with rounded corners
+} */
+
 /* General Widget Container */
 .widget {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden; /* Ensures header aligns perfectly with rounded corners */
+    height: 300px; /* Fixed height */
+    display: flex;
+    flex-direction: column; /* Ensures content stacks vertically */
+}
+
+/* Scrollable Content Area */
+.widget .scrollable-content {
+    flex: 1; /* Ensures this section takes up remaining space */
+    overflow-y: auto; /* Adds a vertical scrollbar when content overflows */
+    padding: 10px; /* Optional: Add padding for better aesthetics */
+}
+
+/* Appointments Widget Specific */
+.appointments-widget .scrollable-content {
+    max-height: calc(400px - 60px); /* Subtract header height for the remaining area */
 }
 
 /* Reusable Widget Header */
@@ -55,6 +78,7 @@ body {
 /* Appointments Widget */
 .appointments-widget {
     width: 700px;
+    height: 305px;
     flex: 2; /* Larger share of space */
 }
 
@@ -81,6 +105,7 @@ body {
 /* Profile Widget */
 .profile-widget {
     width: 300px;
+    height: 305px;
     flex: 1; /* Smaller share of space */
     text-align: center;
 }
@@ -113,7 +138,7 @@ body {
 
 /* Graph Widget */
 .graph-widget {
-    width: 700px;
+    width: 400px;
     flex: 2; /* Larger share of space */
     text-align: center;
 }
@@ -226,4 +251,9 @@ body {
     color: #a9a9a9; /* Light gray text */
     cursor: not-allowed; /* Disable pointer on hover */
     transform: none; /* No zoom effect */
+}
+
+.additional-widget {
+    width: 300px;
+    flex: 1; /* Larger share of space */
 }

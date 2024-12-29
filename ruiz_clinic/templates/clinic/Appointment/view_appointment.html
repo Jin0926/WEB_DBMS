@@ -12,7 +12,7 @@
 
 <!-- Button to Trigger Create Appointment Modal -->
 <button id="createAppointmentBtn" class="btn" 
-    {% if is_past_date or is_sunday or is_past_time %}disabled{% endif %}>
+    {% if is_past_date or is_sunday %}disabled{% endif %}>
     Create Appointment
 </button>
 
@@ -24,6 +24,7 @@
                 <tr>
                     <th>First Name</th>
                     <th>Last Name</th>
+                    <th>Contact Number</th>
                     <th>Appointment Time</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -34,18 +35,21 @@
                     <tr>
                         <td>{{ appointment.app_fname }}</td>
                         <td>{{ appointment.app_lname }}</td>
+                        <td>{{ appointment.app_contact }}</td>
                         <td>{{ appointment.app_time }}</td>
                         <td>{{ appointment.app_status }}</td>
                         <td>
                             <!-- View button to show appointment details -->
                             <button class="view" 
-                                    data-id="{{ appointment.app_id }}"
-                                    data-fname="{{ appointment.app_fname }}"
-                                    data-lname="{{ appointment.app_lname }}"
-                                    data-time="{{ appointment.app_time }}"
-                                    data-status="{{ appointment.app_status }}">
-                                View
-                            </button>
+                                data-id="{{ appointment.app_id }}"
+                                data-fname="{{ appointment.app_fname }}"
+                                data-lname="{{ appointment.app_lname }}"
+                                data-contact="{{ appointment.app_contact }}"
+                                data-time="{{ appointment.app_time }}"
+                                data-status="{{ appointment.app_status }}"
+                                {% if is_past_date or is_sunday %}disabled style="background-color: #dcdcdc; color: #7f8c8d;"{% endif %}>
+                            View
+                        </button>
                         </td>
                     </tr>
                 {% endfor %}    
@@ -76,7 +80,7 @@
         <!-- Buttons Inside the Modal -->
         <div class="modal-actions">
             <button id="editAppointmentBtn" class="btn"
-                {% if is_past_date or is_sunday or is_past_time or appointment.is_past %}disabled{% endif %}>
+                {% if is_past_date or is_sunday or appointment.is_past %}disabled{% endif %}>
                 Edit Appointment
             </button>
             <button id="cancelAppointmentBtn" class="btn">Cancel Appointment</button>
@@ -140,6 +144,7 @@
         button.onclick = function() {
             appointmentDetails.fname.innerText = button.getAttribute("data-fname");
             appointmentDetails.lname.innerText = button.getAttribute("data-lname");
+            appointmentDetails.contact.innerText = button.getAttribute("data-contact");
             appointmentDetails.time.innerText = button.getAttribute("data-time");
             appointmentDetails.status.innerText = button.getAttribute("data-status");
 
