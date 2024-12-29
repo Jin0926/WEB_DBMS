@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'RUIZ.wsgi.application'
 DATABASES = {
    'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'RuizClinic',
+        'NAME': 'RuizClinic2',
         'USER': 'postgres',
         'PASSWORD': '123456',
         'HOST': 'localhost',
