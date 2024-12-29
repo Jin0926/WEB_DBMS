@@ -14,46 +14,47 @@
             <!-- Appointments Widget -->
             <div class="appointments-widget widget">
                 <div class="widget-header">
-                    <button id="back-btn" class="nav-btn">←</button>
-                    <span id="appointment-date-header">Appointment(s) for: {{ current_date }}</span>
-                    <button id="forward-btn" class="nav-btn">→</button>
+                    <label for="appointment-date-picker">Select Date:</label>
+                    <input type="date" id="appointment-date-picker" value="{{ selected_date|date:'Y-m-d' }}">
+                    <span id="appointment-date-header">Appointments for: {{ current_date }}</span>
                 </div>
-                <table class="appointments-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Contact No.</th>
-                            <th>Time</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for appointment in appointments %}
-                        <tr>
-                            <td>{{ appointment.app_fname }} {{ appointment.app_lname }}</td>
-                            <td>{{ appointment.app_contact }}</td>
-                            <td>{{ appointment.app_time }}</td>
-                            <td>{{ appointment.app_status }}</td>
-                            <td>
-                                {% with appointment.app_status as current_status %}
-                                    {% if current_status == "Waiting" %}
-                                        <button class="status-button" data-id="{{ appointment.app_id }}" data-next-status="Ongoing">Ongoing</button>
-                                    {% elif current_status == "Ongoing" %}
-                                        <button class="status-button" data-id="{{ appointment.app_id }}" data-next-status="Done">Done</button>
-                                    {% else %}
-                                        <span>Completed</span>
+                <div class="scrollable-content">
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Contact No.</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>{{ appointment.app_fname }} {{ appointment.app_lname }}</td>
+                                <td>{{ appointment.app_contact }}</td>
+                                <td>{{ appointment.app_time }}</td>
+                                <td>{{ appointment.app_status }}</td>
+                                <td>
+                                    {% with appointment.app_status as current_status %}
+                                        {% if current_status == "Waiting" %}
+                                            <button class="status-button" data-id="{{ appointment.app_id }}" data-next-status="Ongoing">Ongoing</button>
+                                        {% elif current_status == "Ongoing" %}
+                                            <button class="status-button" data-id="{{ appointment.app_id }}" data-next-status="Done">Done</button>
+                                        {% else %}
+                                            <span>Completed</span>
                                     {% endif %}
                                 {% endwith %}
-                                <!-- Hide the cancel button if status is Completed -->
                                 {% if appointment.app_status != "Done" %}
                                     <button class="cancel-button" data-id="{{ appointment.app_id }}">Cancel</button>
                                 {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Profile Widget -->
@@ -93,57 +94,42 @@
             <div class="widget-header">NOTICE</div>
             {% if low_stock_items.exists %}
                 {% for item in low_stock_items %}
-                    <p>🔔 Low Stock Alert: {{item.item_category_id.item_category_name }} {{ item.item_brand }} {{ item.item_model }} ({{ item.item_quantity }} left)</p>
+                    <p>🔔 Low Stock Alert: {{ item.item_category_id.item_category_name }} {{ item.item_brand }} {{ item.item_model }} ({{ item.item_quantity }} left)</p>
                 {% endfor %}
             {% else %}
                 <p>No low-stock items.</p>
             {% endif %}
         </div>
+
+        <!-- Additional Widget -->
+        <div class="additional-widget widget">
+            <div class="widget-header">FOLLOW UP PATIENT</div>
+            <div class="additional-content">
+                <p>Placeholder for additional information or content.</p>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    // JavaScript for updating date and time
-    let currentDate = new Date("{{ selected_date }}");
+    document.getElementById('appointment-date-picker').addEventListener('change', function () {
+        const selectedDate = this.value; // Get the selected date
+        window.location.href = `?selected_date=${selectedDate}`; // Redirect to the updated URL
+    });
 
-    function formatDate(date) {
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        const year = date.getFullYear().toString().slice(2);
-        return `${month}/${day}/${year}`;
-    }
-
-    function isToday(date) {
-        const today = new Date();
-        return date.getDate() === today.getDate() &&
-               date.getMonth() === today.getMonth() &&
-               date.getFullYear() === today.getFullYear();
-    }
-
-    function updateDateHeader() {
-        if (isToday(currentDate)) {
-            document.getElementById('appointment-date-header').innerHTML = `Appointment(s) TODAY`;
+    // Update the header dynamically based on today's date
+    function updateDateHeader(selectedDate) {
+        const today = new Date().toISOString().split('T')[0]; // Format today's date as YYYY-MM-DD
+        const header = document.getElementById('appointment-date-header');
+        if (selectedDate === today) {
+            header.textContent = `Appointments TODAY`;
         } else {
-            document.getElementById('appointment-date-header').innerHTML = `Appointment(s) for: ${formatDate(currentDate)}`;
+            header.textContent = `Appointments for: ${selectedDate}`;
         }
     }
 
-    function changeDate(offset) {
-        currentDate.setDate(currentDate.getDate() + offset);
-        updateDateHeader();
-
-        window.location.href = `?selected_date=${currentDate.toISOString().split('T')[0]}`;
-    }
-
-    document.getElementById('back-btn').addEventListener('click', function() {
-        changeDate(-1);
-    });
-
-    document.getElementById('forward-btn').addEventListener('click', function() {
-        changeDate(1);
-    });
-
-    updateDateHeader();
+    // Initialize header on page load
+    updateDateHeader(document.getElementById('appointment-date-picker').value);
 
     function updateDateTime() {
         const now = new Date();
@@ -164,15 +150,13 @@
         button.addEventListener('click', function () {
             const appointmentId = this.dataset.id;
             const nextStatus = this.dataset.nextStatus;
-    
-            // Show confirmation dialog
+
             if (confirm(`Are you sure you want to update the status to ${nextStatus}?`)) {
-                // Send the AJAX POST request
                 fetch('/update-appointment-status/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}', // CSRF token for Django
+                        'X-CSRFToken': '{{ csrf_token }}',
                     },
                     body: JSON.stringify({
                         appointment_id: appointmentId,
@@ -182,7 +166,6 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Reload the page to reflect changes
                         location.reload();
                     } else {
                         alert('Failed to update status: ' + data.error);
@@ -201,21 +184,18 @@
         button.addEventListener('click', function () {
             const appointmentId = this.dataset.id;
 
-            // Show confirmation dialog
             if (confirm('Are you sure you want to cancel this appointment?')) {
-                // Send the AJAX POST request
                 fetch('/delete_appointment/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}', // CSRF token for Django
+                        'X-CSRFToken': '{{ csrf_token }}',
                     },
                     body: JSON.stringify({ appointment_id: appointmentId }),
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Remove the appointment row from the table
                         const row = this.closest('tr');
                         if (row) row.remove();
                     } else {

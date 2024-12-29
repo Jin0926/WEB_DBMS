@@ -136,15 +136,13 @@ class ItemPaymentForm(forms.ModelForm):
         return cleaned_data
 
 #_________________________________APPOINTMENT___________________________________________________
-
 class AppointmentForm(forms.ModelForm):
     class Meta:
         model = Appointment
-        fields = ['app_fname', 'app_lname', 'app_contact', 'app_date', 'app_time', 'app_status',]
+        fields = ['app_fname', 'app_lname', 'app_contact', 'app_date', 'app_time']  # Exclude 'app_status'
         widgets = {
             'app_date': forms.DateInput(attrs={'type': 'date'}),
             'app_time': forms.TimeInput(attrs={'type': 'time'}),
-            'app_status': forms.Select(choices=Appointment.app_status_choices),
         }
         labels = {
             'app_fname': 'First Name',
@@ -152,7 +150,6 @@ class AppointmentForm(forms.ModelForm):
             'app_contact': 'Contact Number',
             'app_date': 'Date',
             'app_time': 'Time',
-            'app_status': 'Status',
         }
 
     def __init__(self, *args, **kwargs):

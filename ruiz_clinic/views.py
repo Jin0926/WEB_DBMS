@@ -12,22 +12,29 @@ import json
 
 
 #_____________________________________DASHBOARD__________________________________________________________
-
 def dashboard(request):
     # Get the selected date from the request or default to today
-    selected_date = request.GET.get('selected_date', timezone.localdate())  # Default to today if no date is passed
+    selected_date_str = request.GET.get('selected_date')
+    if selected_date_str:
+        try:
+            selected_date = timezone.datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = timezone.localdate()
+    else:
+        selected_date = timezone.localdate()
 
-    # Filter appointments for the selected date and future appointments from the current time
+    # Filter appointments for the selected date
     appointments = Appointment.objects.filter(app_date=selected_date).order_by('app_time')
 
     # Query for items with quantity less than 5
-    low_stock_items = Item.objects.filter(item_quantity__lt=5)
+    low_stock_items = Item.objects.filter(item_quantity__lt=3)
 
     return render(request, 'clinic/Dashboard/dashboard.html', {
         'appointments': appointments,
         'selected_date': selected_date,  # Pass the selected date to the template
         'low_stock_items': low_stock_items,  # Pass the low stock items to the template
     })
+
 
 @csrf_exempt
 def update_appointment_status(request):
@@ -70,7 +77,10 @@ def appointment(request):
     return render(request, 'clinic/Appointment/appointment.html', context)
 
 def view_appointment(request):
+    # Retrieve query parameters
     date_str = request.GET.get('date')  # Get the selected date from the query parameters
+    search_query = request.GET.get('search', '')  # Optional search query for filtering
+    
     selected_date = None
     formatted_date = "Unknown Date"
     appointments = []
@@ -102,8 +112,17 @@ def view_appointment(request):
             if selected_date.weekday() == 6:  # 6 represents Sunday
                 is_sunday = True
 
-            # Get all appointments for the selected date and sort by appointment time
-            appointments = Appointment.objects.filter(app_date=selected_date).order_by('app_time')
+            # Get all appointments for the selected date
+            appointments = Appointment.objects.filter(app_date=selected_date)
+
+            # Apply the search filter if a search query is provided
+            if search_query:
+                appointments = appointments.filter(
+                    app_fname__icontains=search_query  # Adjust based on searchable fields
+                )
+
+            # Sort by appointment time
+            appointments = appointments.order_by('app_time')
 
             # Add a flag to each appointment to indicate if it occurs in the past
             for appointment in appointments:
@@ -124,6 +143,7 @@ def view_appointment(request):
         'is_past_date': is_past_date,      # Flag to check if it's a past date
         'is_past_time': is_past_time,      # Flag to check if it's a past time for today
         'is_sunday': is_sunday,            # Pass the is_sunday flag to the template
+        'search_query': search_query,      # Pass the search query to the template
     }
 
     return render(request, 'clinic/Appointment/view_appointment.html', context)
@@ -132,7 +152,9 @@ def create_appointment(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
         if form.is_valid():
-            form.save()
+            appointment = form.save(commit=False)
+            appointment.app_status = 'Waiting'  # Set default status to Waiting
+            appointment.save()
             # Redirect to the same date's view after creation
             return redirect(f"{reverse('view_appointment')}?date={form.cleaned_data['app_date']}")
     else:
